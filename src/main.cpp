@@ -6,7 +6,7 @@ using namespace sf;
 int size = 56;
 Vector2f offset(28,28);
 
-Sprite f[32]; //figures
+Sprite figures[32]; //figures
 std::string position="";
 
 int board[8][8] = 
@@ -21,7 +21,7 @@ int board[8][8] =
 
 std::string toChessNote(Vector2f p)
 {
-  std::string s = "";
+    std::string s = "";
   s += char(p.x/size+97);
   s += char(7-p.y/size+49);
   return s;
@@ -40,10 +40,10 @@ void move(std::string str)
     Vector2f newPos = toCoord(str[2],str[3]);
 
     for(int i=0;i<32;i++)
-     if (f[i].getPosition()==newPos) f[i].setPosition(-100,-100);
+     if (figures[i].getPosition()==newPos) figures[i].setPosition(-100,-100);
         
     for(int i=0;i<32;i++)
-     if (f[i].getPosition()==oldPos) f[i].setPosition(newPos);
+     if (figures[i].getPosition()==oldPos) figures[i].setPosition(newPos);
 
     //castling       //if the king didn't move
     if (str=="e1g1") if (position.find("e1")==-1) move("h1f1"); 
@@ -62,8 +62,8 @@ void loadPosition()
        if (!n) continue;
        int x = abs(n)-1;
        int y = n>0?1:0;
-       f[k].setTextureRect( IntRect(size*x,size*y,size,size) );
-       f[k].setPosition(size*j,size*i);
+       figures[k].setTextureRect( IntRect(size*x,size*y,size,size) );
+       figures[k].setPosition(size*j,size*i);
        k++;
      }
 }
@@ -77,10 +77,10 @@ int main()
     t1.loadFromFile("images/figures.png"); 
     t2.loadFromFile("images/board0.png");
 
-    Sprite figures(t1);
+    Sprite s(t1);
     Sprite sBoard(t2);
 
-    for(int i=0;i<32;i++) f[i].setTexture(t1);
+    for(int i=0;i<32;i++) figures[i].setTexture(t1);
 
     loadPosition();
 
@@ -90,35 +90,36 @@ int main()
 
     while(window.isOpen())
     {
+        Vector2i pos= Mouse::getPosition(window);
 
-    	Vector2i pos= Mouse::getPosition(window);
+        Event e;
+        while(window.pollEvent(e))
+        {
+            if(e.type == Event::Closed)
+                window.close();
 
-    	Event e;
-    	while(window.pollEvent(e))
-    	{
-    		if(e.type == Event::Closed)
-    			window.close();
+            // drag and drop figures
+            if(e.type == Event::MouseButtonPressed)
+                if(e.key.code == Mouse::Left)
+                    for(int i=0;i<32;i++)
+                        if(figures[i].getGlobalBounds().contains(pos.x,pos.y))
+                        {
+                            isMove = true;
+                            n = i;
+                            dx = pos.x - figures[i].getPosition().x;
+                            dy = pos.y - figures[i].getPosition().y;
+                        }
 
-    		// drag and drop figures
-    		if(e.type == Event::MouseButtonPressed)
-    			if(e.key.code == Mouse::Left)
-    				if(figures.getGlobalBounds().contains(pos.x,pos.y))
-    						{
-    							isMove = true;
-    							dx = pos.x - figures.getPosition().x;
-    							dy = pos.y - figures.getPosition().y;
-    						}
+            if(e.type == Event::MouseButtonReleased)
+                if(e.key.code == Mouse::Left)
+                    isMove = false;
+        }
 
-    		if(e.type == Event::MouseButtonReleased)
-    			if(e.key.code == Mouse::Left)
-    				isMove = false;
-    	}
-
-    	if (isMove) figures.setPosition(pos.x-dx, pos.y-dy);
+        if (isMove) figures[n].setPosition(pos.x-dx, pos.y-dy);
 
     	window.clear();
     	window.draw(sBoard);
-    	for(int i =0; i<32; i++) window.draw(f[i]);
+    	for(int i =0; i<32; i++) window.draw(figures[i]);
     	window.display();
     }
 }
