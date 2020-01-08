@@ -63,8 +63,6 @@ void move(std::string str)
     if (str=="e8c8") if (position.find("e8")==-1) move("a8d8");
 }
 
-std::string postion = "";
-
 /*
  * Calculate figures rectangule size
  * Set position of each figure
@@ -94,9 +92,12 @@ int main()
     //RenderWindow window(VideoMode(594, 594), "The Chess! (press SPACE)");
     RenderWindow window(VideoMode(454, 453), "The Chess! (press SPACE)");
 
+    ConnectToEngine("src/stockfish.exe");
+
     Texture t1,t2;
     t1.loadFromFile("images/figures.png"); 
     t2.loadFromFile("images/board0.png");
+    sf::Clock clock;
     //t2.loadFromFile("images/bandw_chessboard.png");
 
     Sprite s(t1);
@@ -158,10 +159,51 @@ int main()
                 }
         }
 
+        // computer move
+        if(Keyboard::isKeyPressed(Keyboard::Space))
+        {
+            str = getNextMove(position);
+            oldPos = toCoord(str[0],str[1]);
+            newPos = toCoord(str[2],str[3]);
+
+            for(int i=0; i<32; i++)
+                if (figures[i].getPosition() == oldPos)
+                    n=i;
+
+            // Animation of move
+            for(int k=0;k<50;k++)
+            {
+                //if( figures[n].getPosition() != newPos)
+                //{
+                    Vector2f p = newPos - oldPos;
+                    figures[n].move(p.x/50, p.y/50);
+                    window.draw(sBoard);
+
+                    for(int i=0;i<32;i++)
+                        window.draw(figures[i]);
+
+                    window.draw(figures[n]);
+                    window.display();
+                //}
+                //else
+                   // break;
+            }
+
+
+           move(str);
+           position+=str+" ";
+           figures[n].setPosition(newPos);
+
+        }
+
+
         if (isMove) figures[n].setPosition(pos.x-dx, pos.y-dy);
 
+        // clear window
         window.clear();
+        // draw chess board
         window.draw(sBoard);
+        // draw chess figures
         for(int i =0; i<32; i++) window.draw(figures[i]);
         window.display();
     }

@@ -2,3 +2,4 @@
 Debug/chess_sfml.exe
 *.exe
 *.o
+/Debug/
