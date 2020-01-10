@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
-#include <time.h>
+//#include <time.h>
 #include "Connector.hpp"
+#include <optional>
 using namespace sf;
 
 int size = 56;
@@ -86,6 +87,26 @@ void loadPosition()
         move(position.substr(i,4));
 }
 
+struct NewMove {
+	int i;
+	std::string from;
+	std::string to;
+};
+
+NewMove event_move_started(const int figure, const Vector2f& position) {
+	const auto start_note = toChessNote(position);
+	return NewMove{
+		figure,
+		start_note,
+		""
+	};
+}
+
+void event_move_finished(NewMove& move, const int figure, const Vector2f& position) {
+	const auto end_note = toChessNote(position);
+	move.to = end_note;
+}
+
 
 int main()
 {
@@ -131,14 +152,17 @@ int main()
                     position.erase(position.length() - 6,5);
                     loadPosition();
                 }
-
             // drag and drop figures
+			// start
+			//inmove
+			//finished. legal move
             if(e.type == Event::MouseButtonPressed)
                 if(e.key.code == Mouse::Left)
                     for(int i=0;i<32;i++)
                         if(figures[i].getGlobalBounds().contains(pos.x,pos.y))
                         {
                             isMove = true;
+
                             n = i;
                             dx = pos.x - figures[i].getPosition().x;
                             dy = pos.y - figures[i].getPosition().y;
@@ -196,7 +220,7 @@ int main()
 
         }
 
-
+		//inMove figure
         if (isMove) figures[n].setPosition(pos.x-dx, pos.y-dy);
 
         // clear window
