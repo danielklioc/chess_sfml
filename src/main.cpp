@@ -1,7 +1,27 @@
+/*
+ * author: Daniel Klioc
+ * brief: Chess game with GUI using SFML librarie and UCI interface
+ * 
+ * TO do:
+ * 1. UCI protocol using boost pipes and process
+ * 2. control who is turn now: human or engine, W or B
+ * 3. End of game
+ * 4. legal move for each figure
+ * 5. separate backend and gui logic 
+ * 6. En passant
+ * 7. Checkmate
+ * 8. animation easing
+ *
+*/
+
+
 #include <SFML/Graphics.hpp>
-//#include <time.h>
-#include "Connector.hpp"
+#include <time.h>
+//#include "Connector.hpp"
 #include <optional>
+#include <iostream>
+#include <boost/process/system.hpp>
+
 using namespace sf;
 
 int size = 56;
@@ -107,19 +127,23 @@ void event_move_finished(NewMove& move, const int figure, const Vector2f& positi
 	move.to = end_note;
 }
 
-
 int main()
 {
-    //RenderWindow window(VideoMode(594, 594), "The Chess! (press SPACE)");
     RenderWindow window(VideoMode(454, 453), "The Chess! (press SPACE)");
 
-    ConnectToEngine("src/stockfish.exe");
+	//int result = boost::   ::system("src/stockfish.exe");
+	int result = boost::process::system("src/stockfish.exe");
+    //ConnectToEngine("src/stockfish.exe");
+	std::cout<< result << std::endl;
 
     Texture t1,t2;
     t1.loadFromFile("images/figures.png"); 
     t2.loadFromFile("images/board0.png");
     sf::Clock clock;
-    //t2.loadFromFile("images/bandw_chessboard.png");
+
+    bool isMove = false;
+    float dx = 0, dy = 0;
+    int n = 0;
 
     Sprite s(t1);
     Sprite sBoard(t2);
@@ -131,9 +155,6 @@ int main()
 
     loadPosition();
 
-    bool isMove = false;
-    float dx = 0, dy = 0;
-    int n = 0;
 
     while(window.isOpen())
     {
@@ -186,7 +207,7 @@ int main()
         // computer move
         if(Keyboard::isKeyPressed(Keyboard::Space))
         {
-            str = getNextMove(position);
+            //str = getNextMove(position);
             oldPos = toCoord(str[0],str[1]);
             newPos = toCoord(str[2],str[3]);
 
