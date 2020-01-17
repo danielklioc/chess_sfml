@@ -106,6 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Connector.hpp" />
+    <ClInclude Include="UCI.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
