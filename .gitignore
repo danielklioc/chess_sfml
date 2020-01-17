@@ -3,3 +3,8 @@ Debug/chess_sfml.exe
 *.exe
 *.o
 /Debug/
+x64/Debug/chess_sfml.log
+.vs/chess_sfml/v15/.suo
+.vs/chess_sfml/v15/Browse.VC.db
+.vs/chess_sfml/v15/Browse.VC.opendb
+.vs/chess_sfml/v15/ipch/AutoPCH/a0c1aabd419aabb0/MAIN.ipch
