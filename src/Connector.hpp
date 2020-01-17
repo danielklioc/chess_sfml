@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
-#include <boost/process/pipe.hpp>
 
 STARTUPINFO sti = {0};
 SECURITY_ATTRIBUTES sats = {0};
@@ -13,15 +12,6 @@ PROCESS_INFORMATION pi = {0};
 HANDLE pipin_w, pipin_r, pipout_w, pipout_r;
 BYTE buffer[2048];
 DWORD writ, excode, read, available;
-
-void ConnectEngineToPipe()
-{
-	//boost::
-	boost::process::pipe pipe_input;
-	boost::process::ipstream is;
-
-	std::vector<std::string> outline;
-}
 
 void ConnectToEngine(char* path)
 {

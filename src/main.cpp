@@ -13,14 +13,14 @@
  * 8. animation easing
  *
 */
-
+#define CONNECTOR_OPTION 1
+#define UCI_OPTINO 0
 
 #include <SFML/Graphics.hpp>
 #include <time.h>
-//#include "Connector.hpp"
+#include "Connector.hpp"
 #include <optional>
 #include <iostream>
-#include <boost/process/system.hpp>
 
 using namespace sf;
 
@@ -127,14 +127,23 @@ void event_move_finished(NewMove& move, const int figure, const Vector2f& positi
 	move.to = end_note;
 }
 
+
+void engine_move()
+{
+
+}
+
 int main()
 {
     RenderWindow window(VideoMode(454, 453), "The Chess! (press SPACE)");
 
-	//int result = boost::   ::system("src/stockfish.exe");
-	int result = boost::process::system("src/stockfish.exe");
-    //ConnectToEngine("src/stockfish.exe");
-	std::cout<< result << std::endl;
+#ifdef CONNECTOR_OPTION
+	ConnectToEngine("src/stockfish.exe");
+#elif UCI_OPTINO
+	//do nothing
+#endif // DEBUG
+
+    
 
     Texture t1,t2;
     t1.loadFromFile("images/figures.png"); 
@@ -190,24 +199,55 @@ int main()
                             oldPos = figures[i].getPosition();
                         }
 
-            if(e.type == Event::MouseButtonReleased)
-                if(e.key.code == Mouse::Left)
-                {
-                    isMove = false;
-                    Vector2f p = figures[n].getPosition() + Vector2f(size/2,size/2);
-                    Vector2f newPos = Vector2f( size*int(p.x/size), size*int(p.y/size));
-                    str = toChessNote(oldPos) + toChessNote(newPos);
-                    move(str);
-                    position += str + " ";
-                    std::cout<<str<<std::endl;
-                    figures[n].setPosition(newPos);
-                }
+			if (e.type == Event::MouseButtonReleased)
+			{
+				if (e.key.code == Mouse::Left)
+				{
+					isMove = false;
+					Vector2f p = figures[n].getPosition() + Vector2f(size / 2, size / 2);
+					Vector2f newPos = Vector2f(size*int(p.x / size), size*int(p.y / size));
+					str = toChessNote(oldPos) + toChessNote(newPos);
+					move(str);
+					position += str + " ";
+					std::cout << str << std::endl;
+					figures[n].setPosition(newPos);
+				}
+
+				while (clock.getElapsedTime().asSeconds() < 4.0f)
+				{
+				}
+
+				str = getNextMove(position);
+				oldPos = toCoord(str[0], str[1]);
+				newPos = toCoord(str[2], str[3]);
+
+				for (int i = 0; i < 32; i++)
+					if (figures[i].getPosition() == oldPos)
+						n = i;
+
+				// Animation of move
+				for (int k = 0; k < 50; k++)
+				{
+					//if( figures[n].getPosition() != newPos)
+					//{
+					Vector2f p = newPos - oldPos;
+					figures[n].move(p.x / 50, p.y / 50);
+					window.draw(sBoard);
+
+					for (int i = 0; i < 32; i++)
+						window.draw(figures[i]);
+
+					window.draw(figures[n]);
+					window.display();
+				}
+				//clock.restart();
+			}
         }
 
         // computer move
         if(Keyboard::isKeyPressed(Keyboard::Space))
         {
-            //str = getNextMove(position);
+            str = getNextMove(position);
             oldPos = toCoord(str[0],str[1]);
             newPos = toCoord(str[2],str[3]);
 
