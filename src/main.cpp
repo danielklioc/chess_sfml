@@ -11,7 +11,7 @@
  * 6. En passant
  * 7. Checkmate
  * 8. animation easing
- *
+ * 9. highlight then click on figure, to show legal move
 */
 #define CONNECTOR_OPTION 1
 #define UCI_OPTINO 0
@@ -41,20 +41,16 @@ int board[8][8] =
       6, 6, 6, 6, 6, 6, 6, 6,
       1, 2, 3, 4, 5, 3, 2, 1};
 
-/*
- * convert figure position from vector to board representation
- */
-std::string toChessNote(Vector2f p)
+/** convert figure position from vector to board representation. */
+std::string toChessNote(Vector2f position)
 {
     std::string s = "";
-    s += char(p.x/size+97);
-    s += char(7-p.y/size+49);
+    s += char(position.x/size+97);
+    s += char(7 - position.y/size+49);
     return s;
 }
 
-/*
- * move figure to coordinated
- */
+/** convert figure position from chess board representation to vector  */
 Vector2f toCoord(char a,char b)
 {
    int x = int(a) - 97;
@@ -71,13 +67,19 @@ void move(std::string str)
     Vector2f oldPos = toCoord(str[0],str[1]);
     Vector2f newPos = toCoord(str[2],str[3]);
 
-    for(int i=0;i<32;i++)
-     if (figures[i].getPosition()==newPos) figures[i].setPosition(-100,-100);
+	// check if figure have been atacked
+	for (int i = 0; i < 32; i++)
+		if (figures[i].getPosition() == newPos)
+		{
+			// remove from board
+			figures[i].setPosition(-100,-100);
+		}
         
     for(int i=0;i<32;i++)
-        if (figures[i].getPosition()==oldPos) figures[i].setPosition(newPos);
+       if (figures[i].getPosition()==oldPos) figures[i].setPosition(newPos);
 
-    //castling       //if the king didn't move
+    //castling       
+	//if the king made first move
     if (str=="e1g1") if (position.find("e1")==-1) move("h1f1"); 
     if (str=="e8g8") if (position.find("e8")==-1) move("h8f8");
     if (str=="e1c1") if (position.find("e1")==-1) move("a1d1");
@@ -122,20 +124,55 @@ NewMove event_move_started(const int figure, const Vector2f& position) {
 	};
 }
 
-void event_move_finished(NewMove& move, const int figure, const Vector2f& position) {
+void event_move_finished(NewMove& move, const int figure, const Vector2f& position)
+{
 	const auto end_note = toChessNote(position);
 	move.to = end_note;
 }
 
 
-void engine_move()
+void engine_move( int n, Vector2f oldPosition, Vector2f newPosition)
 {
+	sf::Clock clock; 
+	std::string str = ""; 
 
+	while (clock.getElapsedTime().asSeconds() < 4.0f)
+	{
+	}
+
+	str = getNextMove(position);
+	oldPosition = toCoord(str[0], str[1]);
+	newPosition = toCoord(str[2], str[3]);
+
+	for (int i = 0; i < 32; i++)
+		if (figures[i].getPosition() == oldPosition)
+			n = i;
+}
+
+void engineMoveAnimation(int n,Vector2f oldPosition, Vector2f newPosition)
+{
+	// Animation of move
+	for (int k = 0; k < 50; k++)
+	{
+		Vector2f p = newPosition - oldPosition;
+		figures[n].move(p.x / 50, p.y / 50);
+		//window.draw(sBoard);
+
+		for (int i = 0; i < 32; i++)
+		{
+		}
+		//window.draw(figures[i]);
+
+	//window.draw(figures[n]);
+	//window.display();
+	}
+	//clock.restart();
 }
 
 int main()
 {
     RenderWindow window(VideoMode(454, 453), "The Chess! (press SPACE)");
+	//RenderWindow window(VideoMode(454, 573), "The Chess! (press SPACE)");
 
 #ifdef CONNECTOR_OPTION
 	ConnectToEngine("src/stockfish.exe");
@@ -143,14 +180,14 @@ int main()
 	//do nothing
 #endif // DEBUG
 
-    
-
     Texture t1,t2;
     t1.loadFromFile("images/figures.png"); 
-    t2.loadFromFile("images/board0.png");
+	t2.loadFromFile("images/board0.png");
+    //t2.loadFromFile("images/board2.png");
     sf::Clock clock;
 
     bool isMove = false;
+	bool whiteMove = true;
     float dx = 0, dy = 0;
     int n = 0;
 
@@ -212,7 +249,7 @@ int main()
 					std::cout << str << std::endl;
 					figures[n].setPosition(newPos);
 				}
-
+				/*
 				while (clock.getElapsedTime().asSeconds() < 4.0f)
 				{
 				}
@@ -228,8 +265,7 @@ int main()
 				// Animation of move
 				for (int k = 0; k < 50; k++)
 				{
-					//if( figures[n].getPosition() != newPos)
-					//{
+
 					Vector2f p = newPos - oldPos;
 					figures[n].move(p.x / 50, p.y / 50);
 					window.draw(sBoard);
@@ -240,13 +276,14 @@ int main()
 					window.draw(figures[n]);
 					window.display();
 				}
-				//clock.restart();
+				*/
 			}
         }
 
         // computer move
         if(Keyboard::isKeyPressed(Keyboard::Space))
         {
+			
             str = getNextMove(position);
             oldPos = toCoord(str[0],str[1]);
             newPos = toCoord(str[2],str[3]);
@@ -255,11 +292,13 @@ int main()
                 if (figures[i].getPosition() == oldPos)
                     n=i;
 
+
+			//engine_move(str);
+
             // Animation of move
             for(int k=0;k<50;k++)
             {
-                //if( figures[n].getPosition() != newPos)
-                //{
+
                     Vector2f p = newPos - oldPos;
                     figures[n].move(p.x/50, p.y/50);
                     window.draw(sBoard);
@@ -269,9 +308,7 @@ int main()
 
                     window.draw(figures[n]);
                     window.display();
-                //}
-                //else
-                   // break;
+        
             }
 
 
