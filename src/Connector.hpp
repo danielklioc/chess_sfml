@@ -32,6 +32,26 @@ void ConnectToEngine(char* path)
    CreateProcess(NULL, path, NULL, NULL, TRUE,0, NULL, NULL, &sti, &pi);
 }
 
+std::string startEngine(std::string message)
+{
+	std::string str;
+
+	message = "uci";
+
+	WriteFile(pipin_w, message.c_str(), message.length(), &writ, NULL);
+	Sleep(500);
+
+	PeekNamedPipe(pipout_r, buffer, sizeof(buffer), &read, &available, NULL);
+	do
+	{
+		ZeroMemory(buffer, sizeof(buffer));
+		if (!ReadFile(pipout_r, buffer, sizeof(buffer), &read, NULL) || !read) break;
+		buffer[read] = 0;
+		str += (char*)buffer;
+	} while (read >= sizeof(buffer));
+
+	return str;
+}
 
 std::string getNextMove(std::string position)
 {     

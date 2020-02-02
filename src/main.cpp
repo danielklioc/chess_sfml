@@ -13,8 +13,8 @@
  * 8. animation easing
  * 9. highlight then click on figure, to show legal move
 */
-#define CONNECTOR_OPTION 1
-#define UCI_OPTINO 0
+#define CONNECTOR 1
+#define UCI 0
 
 #include <SFML/Graphics.hpp>
 #include <time.h>
@@ -131,10 +131,11 @@ void event_move_finished(NewMove& move, const int figure, const Vector2f& positi
 }
 
 
-void engine_move( int n, Vector2f oldPosition, Vector2f newPosition)
+void engine_move( int n)
 {
 	sf::Clock clock; 
 	std::string str = ""; 
+	Vector2f oldPosition, newPosition;
 
 	while (clock.getElapsedTime().asSeconds() < 4.0f)
 	{
@@ -174,16 +175,18 @@ int main()
     RenderWindow window(VideoMode(454, 453), "The Chess! (press SPACE)");
 	//RenderWindow window(VideoMode(454, 573), "The Chess! (press SPACE)");
 
-#ifdef CONNECTOR_OPTION
+#ifdef CONNECTOR
+	std::string response = "";
 	ConnectToEngine("src/stockfish.exe");
-#elif UCI_OPTINO
+	
+
+#elif UCI
 	//do nothing
 #endif // DEBUG
 
     Texture t1,t2;
     t1.loadFromFile("images/figures.png"); 
 	t2.loadFromFile("images/board0.png");
-    //t2.loadFromFile("images/board2.png");
     sf::Clock clock;
 
     bool isMove = false;
@@ -218,6 +221,7 @@ int main()
                 {
                     position.erase(position.length() - 6,5);
                     loadPosition();
+					whiteMove = true;
                 }
             // drag and drop figures
 			// start
@@ -225,17 +229,19 @@ int main()
 			//finished. legal move
             if(e.type == Event::MouseButtonPressed)
                 if(e.key.code == Mouse::Left)
-                    for(int i=0;i<32;i++)
-                        if(figures[i].getGlobalBounds().contains(pos.x,pos.y))
-                        {
-                            isMove = true;
+					if (whiteMove)
+					{
+						for (int i = 0; i < 32; i++)
+							if (figures[i].getGlobalBounds().contains(pos.x, pos.y))
+							{
+								isMove = true;
 
-                            n = i;
-                            dx = pos.x - figures[i].getPosition().x;
-                            dy = pos.y - figures[i].getPosition().y;
-                            oldPos = figures[i].getPosition();
-                        }
-
+								n = i;
+								dx = pos.x - figures[i].getPosition().x;
+								dy = pos.y - figures[i].getPosition().y;
+								oldPos = figures[i].getPosition();
+							}
+					}
 			if (e.type == Event::MouseButtonReleased)
 			{
 				if (e.key.code == Mouse::Left)
@@ -249,6 +255,7 @@ int main()
 					std::cout << str << std::endl;
 					figures[n].setPosition(newPos);
 				}
+				whiteMove = false;
 				/*
 				while (clock.getElapsedTime().asSeconds() < 4.0f)
 				{
@@ -298,7 +305,6 @@ int main()
             // Animation of move
             for(int k=0;k<50;k++)
             {
-
                     Vector2f p = newPos - oldPos;
                     figures[n].move(p.x/50, p.y/50);
                     window.draw(sBoard);
@@ -307,15 +313,14 @@ int main()
                         window.draw(figures[i]);
 
                     window.draw(figures[n]);
-                    window.display();
-        
+                    window.display();       
             }
-
 
            move(str);
            position+=str+" ";
            figures[n].setPosition(newPos);
 
+		   whiteMove = true;
         }
 
 		//inMove figure
