@@ -23,7 +23,7 @@
     <ClInclude Include="src\Connector.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UCI.h">
+    <ClInclude Include="src\ChessGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
