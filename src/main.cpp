@@ -4,7 +4,7 @@
  * 
  * TO do:
  * 1. UCI protocol using boost pipes and process
- * 2. control who is turn now: human or engine, W or B
+ * 2. control who is turn now: human or engine. DONE
  * 3. End of game
  * 4. legal move for each figure
  * 5. separate backend and gui logic 
@@ -12,6 +12,8 @@
  * 7. Checkmate
  * 8. animation easing
  * 9. highlight then click on figure, to show legal move
+ * 10. Start menu with option play with engine or 2 players
+ * 11. Control who has right for move: W or B
 */
 #define CONNECTOR 1
 #define UCI 0
@@ -42,7 +44,7 @@ int board[8][8] =
       1, 2, 3, 4, 5, 3, 2, 1};
 
 /** convert figure position from vector to board representation. */
-std::string toChessNote(Vector2f position)
+std::string coordinateToChessBoard(Vector2f position)
 {
     std::string s = "";
     s += char(position.x/size+97);
@@ -51,7 +53,7 @@ std::string toChessNote(Vector2f position)
 }
 
 /** convert figure position from chess board representation to vector  */
-Vector2f toCoord(char a,char b)
+Vector2f chessBoardToCoordinate(char a,char b)
 {
    int x = int(a) - 97;
    int y = 7-int(b)+49;
@@ -64,8 +66,8 @@ Vector2f toCoord(char a,char b)
  */
 void move(std::string str)
 {
-    Vector2f oldPos = toCoord(str[0],str[1]);
-    Vector2f newPos = toCoord(str[2],str[3]);
+    Vector2f oldPos = chessBoardToCoordinate(str[0],str[1]);
+    Vector2f newPos = chessBoardToCoordinate(str[2],str[3]);
 
 	// check if figure have been atacked
 	for (int i = 0; i < 32; i++)
@@ -95,15 +97,15 @@ void loadPosition()
     int k=0;
     for(int i=0;i<8;i++)
     for(int j=0;j<8;j++)
-     {
-       int n = board[i][j];
-       if (!n) continue;
-       int x = abs(n)-1;
-       int y = n>0?1:0;
-       figures[k].setTextureRect( IntRect(size*x,size*y,size,size) );
-       figures[k].setPosition(size*j,size*i);
-       k++;
-     }
+    {
+	    int n = board[i][j];
+	    if (!n) continue;
+        int x = abs(n)-1;
+        int y = n>0?1:0;
+        figures[k].setTextureRect( IntRect(size*x,size*y,size,size) );
+        figures[k].setPosition(size*j,size*i);
+        k++;
+    }
 
     for(int i = 0; i<position.length(); i+=5)
         move(position.substr(i,4));
@@ -116,7 +118,7 @@ struct NewMove {
 };
 
 NewMove event_move_started(const int figure, const Vector2f& position) {
-	const auto start_note = toChessNote(position);
+	const auto start_note = coordinateToChessBoard(position);
 	return NewMove{
 		figure,
 		start_note,
@@ -126,7 +128,7 @@ NewMove event_move_started(const int figure, const Vector2f& position) {
 
 void event_move_finished(NewMove& move, const int figure, const Vector2f& position)
 {
-	const auto end_note = toChessNote(position);
+	const auto end_note = coordinateToChessBoard(position);
 	move.to = end_note;
 }
 
@@ -142,8 +144,8 @@ void engine_move( int n)
 	}
 
 	str = getNextMove(position);
-	oldPosition = toCoord(str[0], str[1]);
-	newPosition = toCoord(str[2], str[3]);
+	oldPosition = chessBoardToCoordinate(str[0], str[1]);
+	newPosition = chessBoardToCoordinate(str[2], str[3]);
 
 	for (int i = 0; i < 32; i++)
 		if (figures[i].getPosition() == oldPosition)
@@ -212,23 +214,29 @@ int main()
         Event e;
         while(window.pollEvent(e))
         {
-            if(e.type == Event::Closed)
-                window.close();
+			if (e.type == Event::Closed)
+			{
+				window.close();
+			}
 
             //move back
-            if(e.type == Event::KeyPressed)
-                if(e.key.code == Keyboard::BackSpace )
-                {
-                    position.erase(position.length() - 6,5);
-                    loadPosition();
+			if (e.type == Event::KeyPressed)
+			{
+				if (e.key.code == Keyboard::BackSpace)
+				{
+					position.erase(position.length() - 6, 5);
+					loadPosition();
 					whiteMove = true;
-                }
+				}
+			}
+
             // drag and drop figures
 			// start
 			//inmove
 			//finished. legal move
-            if(e.type == Event::MouseButtonPressed)
-                if(e.key.code == Mouse::Left)
+			if (e.type == Event::MouseButtonPressed)
+			{
+				if (e.key.code == Mouse::Left)
 					if (whiteMove)
 					{
 						for (int i = 0; i < 32; i++)
@@ -242,6 +250,8 @@ int main()
 								oldPos = figures[i].getPosition();
 							}
 					}
+			}
+
 			if (e.type == Event::MouseButtonReleased)
 			{
 				if (e.key.code == Mouse::Left)
@@ -249,41 +259,13 @@ int main()
 					isMove = false;
 					Vector2f p = figures[n].getPosition() + Vector2f(size / 2, size / 2);
 					Vector2f newPos = Vector2f(size*int(p.x / size), size*int(p.y / size));
-					str = toChessNote(oldPos) + toChessNote(newPos);
+					str = coordinateToChessBoard(oldPos) + coordinateToChessBoard(newPos);
 					move(str);
 					position += str + " ";
 					std::cout << str << std::endl;
 					figures[n].setPosition(newPos);
 				}
 				whiteMove = false;
-				/*
-				while (clock.getElapsedTime().asSeconds() < 4.0f)
-				{
-				}
-
-				str = getNextMove(position);
-				oldPos = toCoord(str[0], str[1]);
-				newPos = toCoord(str[2], str[3]);
-
-				for (int i = 0; i < 32; i++)
-					if (figures[i].getPosition() == oldPos)
-						n = i;
-
-				// Animation of move
-				for (int k = 0; k < 50; k++)
-				{
-
-					Vector2f p = newPos - oldPos;
-					figures[n].move(p.x / 50, p.y / 50);
-					window.draw(sBoard);
-
-					for (int i = 0; i < 32; i++)
-						window.draw(figures[i]);
-
-					window.draw(figures[n]);
-					window.display();
-				}
-				*/
 			}
         }
 
@@ -292,8 +274,8 @@ int main()
         {
 			
             str = getNextMove(position);
-            oldPos = toCoord(str[0],str[1]);
-            newPos = toCoord(str[2],str[3]);
+            oldPos = chessBoardToCoordinate(str[0],str[1]);
+            newPos = chessBoardToCoordinate(str[2],str[3]);
 
             for(int i=0; i<32; i++)
                 if (figures[i].getPosition() == oldPos)
