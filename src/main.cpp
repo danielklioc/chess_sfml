@@ -4,14 +4,16 @@
  * 
  * TO do:
  * 1. UCI protocol using boost pipes and process
- * 2. control who is turn now: human or engine, W or B
+ * 2. control who is turn now: human or engine. DONE
  * 3. End of game
  * 4. legal move for each figure
  * 6. En passant
  * 7. Checkmate
  * 8. animation easing
  * 9. highlight then click on figure, to show legal move
- * 10. check if string holding previous moves is empty. at the moment it crashes game.
+ * 10. Start menu with option play with engine or 2 players
+ * 11. Control who has right for move: W or B
+ * 12. check if string holding previous moves is empty. at the moment it crashes game.
  *     in future, just block previousmove method
 */
 
@@ -42,7 +44,7 @@ int board[8][8] =
       1, 2, 3, 4, 5, 3, 2, 1};
 
 /** convert figure position from vector to board representation. */
-std::string toChessNote(sf::Vector2f position)
+std::string coordinateToChessBoard(sf::Vector2f position)
 {
     std::string s = "";
     s += char(position.x/boardSize+97);
@@ -51,7 +53,7 @@ std::string toChessNote(sf::Vector2f position)
 }
 
 /** convert figure position from chess board representation to vector  */
-sf::Vector2f toCoord(char a,char b)
+sf::Vector2f chessBoardToCoordinate(char a,char b)
 {
    int x = int(a) - 97;
    int y = 7-int(b)+49;
@@ -70,8 +72,8 @@ void castling(std::string strPos)
 
 void move(std::string str)
 {
-	sf::Vector2f oldPos = toCoord(str[0], str[1]);
-	sf::Vector2f newPos = toCoord(str[2], str[3]);
+    sf::Vector2f oldPos = chessBoardToCoordinate(str[0],str[1]);
+    sf::Vector2f newPos = chessBoardToCoordinate(str[2],str[3]);
 
 	// check if figure have been atacked
 	for (int i = 0; i < 32; i++)
@@ -88,9 +90,9 @@ void move(std::string str)
 	castling(str);
 }
 
-
 class NewMove
 {
+
 public:
 	NewMove() {}
 	~NewMove(){}
@@ -140,9 +142,9 @@ public:
 		move.loadPosition();
 		ConnectToEngine("src/stockfish.exe");
 	}
-
 	//destructor
 	~ChessGame() 
+
 	{
 		CloseConnection();
 	}
@@ -212,6 +214,14 @@ int main()
 			{
 				window.close();
 			}
+			
+        sf::Event e;
+        while(window.pollEvent(e))
+        {
+			if (e.type == sf::Event::Closed)
+			{
+				window.close();
+			}
 
 			//previous move
 			if (e.type == sf::Event::KeyPressed)
@@ -219,7 +229,9 @@ int main()
 				{
 					whiteMove = m.previousMove();
 				}
-			// drag and drop figures
+			}
+
+            // drag and drop figures
 			// start
 			//inmove
 			//finished. legal move
@@ -237,6 +249,7 @@ int main()
 								oldPosition = figures[i].getPosition();
 							}
 					}
+
 			if (e.type == sf::Event::MouseButtonReleased)
 			{
 				if (e.key.code == sf::Mouse::Left)
@@ -244,7 +257,8 @@ int main()
 					isMove = false;
 					sf::Vector2f p = figures[n].getPosition() + sf::Vector2f(boardSize / 2, boardSize / 2);
 					sf::Vector2f newPos = sf::Vector2f(boardSize*int(p.x / boardSize), boardSize*int(p.y / boardSize));
-					str = toChessNote(oldPosition) + toChessNote(newPos);
+					str = coordinateToChessBoard(oldPosition) + coordinateToChessBoard(newPos);
+
 					move(str);
 					position += str + " ";
 					std::cout << str << std::endl;
@@ -253,6 +267,7 @@ int main()
 				whiteMove = false;
 			}
 
+        }
 
 			// computer move
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
@@ -260,8 +275,8 @@ int main()
 				if (!whiteMove)
 				{
 					str = getNextMove(position);
-					oldPosition = toCoord(str[0], str[1]);
-					newPosition = toCoord(str[2], str[3]);
+					oldPosition = chessBoardToCoordinate(str[0], str[1]);
+					newPosition = chessBoardToCoordinate(str[2], str[3]);
 
 					for (int i = 0; i < 32; i++)
 						if (figures[i].getPosition() == oldPosition)
@@ -292,7 +307,7 @@ int main()
 		}
 
 		//draw figure on new position after player moved it
-        if (isMove) figures[n].setPosition(pos.x-dx, pos.y-dy);
+        if (isMove) figures[n].setPosition(position.x-dx, position.y-dy);
 
 		// clear window
 		window.clear();
