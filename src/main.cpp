@@ -182,8 +182,6 @@ private:
 	int width2 = 490, height2 = 506; //for board2
 };
 
-
-
 int main()
 {
 	sf::Vector2f oldPosition, newPosition;
@@ -195,29 +193,21 @@ int main()
 	float dx = 0, dy = 0;
 	int n = 0;
 	int width0 = 490, height0 = 506; //for board2
-	
+
 	bool isMove = false;
 	bool whiteMove = true;
 
 	// (press: RIGHT for engine move, LEFT for previous move)");
 	sf::RenderWindow window(sf::VideoMode(width0, height0), "The Chess Game!");
 
-    while(window.isOpen())
-    {
-		sf::Vector2i pos= sf::Mouse::getPosition(window);
+	while (window.isOpen())
+	{
+		sf::Vector2i pos = sf::Mouse::getPosition(window);
 		sf::Event e;
 
 		// pop event on top of event queue
 		while (window.pollEvent(e))
 		{
-			if (e.type == sf::Event::Closed)
-			{
-				window.close();
-			}
-			
-        sf::Event e;
-        while(window.pollEvent(e))
-        {
 			if (e.type == sf::Event::Closed)
 			{
 				window.close();
@@ -229,9 +219,7 @@ int main()
 				{
 					whiteMove = m.previousMove();
 				}
-			}
-
-            // drag and drop figures
+			// drag and drop figures
 			// start
 			//inmove
 			//finished. legal move
@@ -249,7 +237,6 @@ int main()
 								oldPosition = figures[i].getPosition();
 							}
 					}
-
 			if (e.type == sf::Event::MouseButtonReleased)
 			{
 				if (e.key.code == sf::Mouse::Left)
@@ -258,7 +245,6 @@ int main()
 					sf::Vector2f p = figures[n].getPosition() + sf::Vector2f(boardSize / 2, boardSize / 2);
 					sf::Vector2f newPos = sf::Vector2f(boardSize*int(p.x / boardSize), boardSize*int(p.y / boardSize));
 					str = coordinateToChessBoard(oldPosition) + coordinateToChessBoard(newPos);
-
 					move(str);
 					position += str + " ";
 					std::cout << str << std::endl;
@@ -267,7 +253,6 @@ int main()
 				whiteMove = false;
 			}
 
-        }
 
 			// computer move
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
@@ -307,7 +292,7 @@ int main()
 		}
 
 		//draw figure on new position after player moved it
-        if (isMove) figures[n].setPosition(position.x-dx, position.y-dy);
+		if (isMove) figures[n].setPosition(pos.x - dx, pos.y - dy);
 
 		// clear window
 		window.clear();
@@ -322,7 +307,7 @@ int main()
 		window.draw(figures[n]);
 		//for (int i = 0; i < 32; i++) figures[i].move(-offset);
 		window.display();
-    }
+	}
 
 	return 0;
 }
