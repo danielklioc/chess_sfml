@@ -57,6 +57,7 @@ std::string getNextMove(std::string position)
 {     
     std::string str;
     position = "position startpos moves "+position+"\ngo\n";    
+	std::cout << position << std::endl;
 
     WriteFile(pipin_w, position.c_str(), position.length(),&writ, NULL);
     Sleep(500);

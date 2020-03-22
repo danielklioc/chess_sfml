@@ -268,10 +268,10 @@ int main()
 							n = i;
 
 					// Animation of move
-					for (int k = 0; k < 50; k++)
+					for (int k = 0; k < 500; k++)
 					{
 						sf::Vector2f p = newPosition - oldPosition;
-						figures[n].move(p.x / 50, p.y / 50);
+						figures[n].move(p.x / 500, p.y / 500);
 						window.draw(gui.boardSprite);
 
 						for (int i = 0; i < 32; i++)
@@ -298,14 +298,13 @@ int main()
 		window.clear();
 		// draw chess board
 		window.draw(gui.boardSprite);
-		//for (int i = 0; i < 32; i++) figures[i].move(offset); // for board0
+		
 		// draw chess figures
 		for (int i = 0; i < 32; i++)
 		{
 			window.draw(figures[i]);
 		}
-		window.draw(figures[n]);
-		//for (int i = 0; i < 32; i++) figures[i].move(-offset);
+	    window.draw(figures[n]);
 		window.display();
 	}
 

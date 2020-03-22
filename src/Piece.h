@@ -1,35 +1,30 @@
 class Piece
 {
 public:
-	Piece(char cColor) : mcColor(cColor) {}
+	Piece(char colour) : pieceColor(colour) {}
 
 	~Piece() {}
 
 	virtual char GetPiece() = 0;
 
 	char GetColor() {
-		return mcColor;
+		return pieceColor;
 	}
 
-	bool IsLegalMove(int iSrcRow, int iSrcCol, int iDestRow, int iDestCol, Piece* qpaaBoard[8][8])
+	bool LegalMove(int sourceRow, int sourceColumn, int destinationRow, int destinationColumn)
 	{
-		Piece* qpDest = qpaaBoard[iDestRow][iDestCol];
-		if ((qpDest == 0) || (mcColor != qpDest->GetColor()))
-		{
-			return AreSquaresLegal(iSrcRow, iSrcCol, iDestRow, iDestCol, qpaaBoard);
-		}
-		return false;
+		return PieceLegalMove( sourceRow,  sourceColumn,  destinationRow,  destinationColumn);
 	}
 
 private:
-	virtual bool AreSquaresLegal(int iSrcRow, int iSrcCol, int iDestRow, int iDestCol, Piece* qpaaBoard[8][8]) = 0;
-	char mcColor;
+	bool PieceLegalMove(int sourceRow, int sourceColumn, int destinationRow, int destinationColumn);
+	char pieceColor;
 };
 
 class Pawn : public Piece
 {
 public:
-	Pawn(char cColor) : Piece(cColor) {}
+	Pawn(char colour) : Piece(colour) {}
 	~Pawn() {}
 private:
 	virtual char GetPiece()
@@ -37,38 +32,8 @@ private:
 		return 'P';
 	}
 
-	bool AreSquaresLegal(int iSrcRow, int iSrcCol, int iDestRow, int iDestCol, Piece* qpaaBoard[8][8]) {
-		Piece* qpDest = qpaaBoard[iDestRow][iDestCol];
-		if (qpDest == 0) {
-			// Destination square is unoccupied
-			if (iSrcCol == iDestCol) {
-				if (GetColor() == 'W') {
-					if (iDestRow == iSrcRow + 1) {
-						return true;
-					}
-				}
-				else {
-					if (iDestRow == iSrcRow - 1) {
-						return true;
-					}
-				}
-			}
-		}
-		else {
-			// Dest holds piece of opposite color
-			if ((iSrcCol == iDestCol + 1) || (iSrcCol == iDestCol - 1)) {
-				if (GetColor() == 'W') {
-					if (iDestRow == iSrcRow + 1) {
-						return true;
-					}
-				}
-				else {
-					if (iDestRow == iSrcRow - 1) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
+	bool PieceLegalMove(int sourceRow, int sourceColumn, int destinationRow, int destinationColumn)
+	{
+		return true;
 	}
 };
